@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Maps Scraper</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Inter", sans-serif;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(135deg, #8b5cf6, #6366f1, #0ea5e9);
+        color: #1e293b;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 20px;
+      }
+      .container {
+        width: 100%;
+        max-width: 680px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 0.6s ease;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 5px;
+      }
+      header h1 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.9rem;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+      }
+      header .subtitle {
+        color: #475569;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+      }
+
+      .card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        font-size: 1rem;
+        background: #fff;
+        color: #111827;
+        transition: all 0.2s ease;
+      }
+      input:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+      }
+      input::placeholder {
+        color: #9ca3af;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        flex: 1;
+        padding: 12px 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        color: #fff;
+        transition: all 0.25s ease;
+      }
+      button.primary {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+      }
+      button.primary:hover {
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+        transform: scale(1.03);
+      }
+      button.danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+      }
+      button.danger:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: scale(1.03);
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .log-container {
+        margin-top: 20px;
+        background: #0f172a;
+        border-radius: 12px;
+        padding: 15px;
+        height: 220px;
+        overflow-y: auto;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+      }
+      .log {
+        white-space: pre-wrap;
+        font-family: "Roboto Mono", monospace;
+        color: #dbeafe;
+        font-size: 0.85rem;
+        line-height: 1.45;
+      }
+
+      #progress-container {
+        margin-top: 12px;
+        background: #e2e8f0;
+        height: 10px;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      #progress-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        transition: width 0.4s ease;
+      }
+
+      .status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-align: center;
+        font-size: 0.95rem;
+        background-color: #f1f5f9;
+        color: #334155;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 25px;
+        color: #475569;
+        font-size: 0.85rem;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 25px;
+        }
+        header h1 {
+          font-size: 1.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Google Maps Scraper</h1>
+        <p class="subtitle">Enter a search term or Google Maps URL:</p>
+      </header>
+
+      <div class="card">
+        <input
+          id="query"
+          type="text"
+          placeholder="e.g. travel agencies in Bangalore"
+        />
+        <div class="row">
+          <button id="start" class="primary" disabled>Start Scraping</button>
+          <button id="cancel" class="danger">Cancel</button>
+        </div>
+
+        <div class="log-container">
+          <div id="logs" class="log">Waiting for input...</div>
+        </div>
+        <div id="progress-container"><div id="progress-bar"></div></div>
+        <div class="status" id="status">Idle...</div>
+      </div>
+
+      <footer><p>Powered by Puppeteer & Node.js</p></footer>
+    </div>
+
+    <script>
+      const WS_URL = window.location.origin.replace(/^http/, "ws");
+      let socket, pingInterval;
+      const logs = document.getElementById("logs");
+      const statusEl = document.getElementById("status");
+      const progressBar = document.getElementById("progress-bar");
+      const queryInput = document.getElementById("query");
+      const startBtn = document.getElementById("start");
+      const cancelBtn = document.getElementById("cancel");
+
+      let totalResults = 0,
+        scrapedCount = 0;
+
+      const logsContainer = document.querySelector(".log-container");
+
+      function appendLog(text) {
+        const line = document.createElement("div");
+        let color = "#93c5fd";
+        if (text.includes("Saved:")) color = "#86efac";
+        else if (text.includes("Error")) color = "#f87171";
+        else if (text.includes("Warning")) color = "#facc15";
+        line.style.color = color;
+        line.textContent = text;
+        logs.appendChild(line);
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+      }
+
+      function updateStatus(text, color = "#334155", bg = "#f1f5f9") {
+        statusEl.textContent = text;
+        statusEl.style.color = color;
+        statusEl.style.backgroundColor = bg;
+      }
+
+      function updateProgress(current, total) {
+        if (!total) return;
+        const pct = Math.min((current / total) * 100, 100);
+        progressBar.style.width = pct + "%";
+      }
+
+      function enableStart() {
+        startBtn.disabled = false;
+      }
+      function disableStart() {
+        startBtn.disabled = true;
+      }
+
+      function connectSocket() {
+        socket = new WebSocket(WS_URL);
+        appendLog(`Connecting to ${WS_URL}...`);
+        updateStatus("Connecting...", "#92400e", "#fef3c7");
+        disableStart();
+
+        socket.addEventListener("open", () => {
+          appendLog("Connected to backend");
+          updateStatus("Connected", "#166534", "#dcfce7");
+          enableStart();
+
+          if (pingInterval) clearInterval(pingInterval);
+          pingInterval = setInterval(() => {
+            if (socket.readyState === WebSocket.OPEN)
+              socket.send(JSON.stringify({ type: "ping" }));
+          }, 25000);
+        });
+
+        socket.addEventListener("message", (e) => {
+          const data = JSON.parse(e.data);
+          if (data.type === "log") handleLog(data.message);
+          else if (data.type === "done") handleDone(data.file);
+          else if (data.type === "error") handleError(data.message);
+        });
+
+        socket.addEventListener("close", () => {
+          appendLog("Connection closed.");
+          updateStatus("Connection closed", "#991b1b", "#fee2e2");
+          disableStart();
+          if (pingInterval) clearInterval(pingInterval);
+          setTimeout(connectSocket, 3000);
+        });
+      }
+
+      function handleLog(msg) {
+        msg = msg.trim();
+        appendLog(msg);
+
+        const totalMatch = msg.match(/Found total: (\d+)/);
+        if (totalMatch) totalResults = parseInt(totalMatch[1]);
+
+        const scrapeMatch = msg.match(/Scraping place (\d+) of (\d+)/);
+        if (scrapeMatch) {
+          scrapedCount = parseInt(scrapeMatch[1]);
+          totalResults = parseInt(scrapeMatch[2]);
+          updateProgress(scrapedCount, totalResults);
+          updateStatus(`Scraping ${scrapedCount} / ${totalResults}...`);
+        }
+
+        if (msg.includes("Scraping completed successfully.")) {
+          updateStatus("Scraping completed!", "#166534", "#dcfce7");
+          enableStart();
+        }
+      }
+
+      function handleDone(file) {
+        appendLog("Scraping completed successfully. Preparing download...");
+        updateStatus("Downloading CSV...", "#166534", "#dcfce7");
+
+        const downloadUrl = `/download/${encodeURIComponent(file)}`;
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = file;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        appendLog(`✅ CSV file downloaded: ${file}`);
+        updateStatus("Download completed!", "#166534", "#dcfce7");
+        enableStart();
+      }
+
+      function handleError(msg) {
+        appendLog("Error: " + msg);
+        updateStatus("Error occurred", "#991b1b", "#fee2e2");
+        enableStart();
+      }
+
+      function safeSend(data) {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+          appendLog("WebSocket not ready. Retrying...");
+          connectSocket();
+          setTimeout(() => {
+            if (socket.readyState === WebSocket.OPEN) socket.send(data);
+          }, 1000);
+          return false;
+        }
+        socket.send(data);
+        return true;
+      }
+
+      function startScraping(query) {
+        logs.textContent = "";
+        scrapedCount = 0;
+        totalResults = 0;
+        updateProgress(0, 1);
+        appendLog("Starting scraper...");
+        updateStatus("Scraping started...", "#92400e", "#fef3c7");
+        disableStart();
+        safeSend(JSON.stringify({ action: "start", query }));
+      }
+
+      startBtn.onclick = () => {
+        const query = queryInput.value.trim();
+        if (!query) return alert("Enter a query or URL!");
+        startScraping(query);
+      };
+
+      cancelBtn.onclick = () => {
+        if (safeSend(JSON.stringify({ action: "cancel" }))) {
+          appendLog("Cancel request sent.");
+          updateStatus("Cancelled.", "#92400e", "#fef3c7");
+          enableStart();
+        }
+      };
+
+      connectSocket();
+    </script>
+  </body>
+</html>
