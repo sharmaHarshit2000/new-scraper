@@ -52,8 +52,8 @@ async function scrapeGoogleMaps(searchUrl) {
   console.log("Starting Google Maps scraper...");
   console.log(`Opening URL: ${searchUrl}`);
 
-  const isRender =
-    process.env.RENDER === "true" || process.env.NODE_ENV === "production";
+  const isRender = process.env.RENDER === "true";
+
 
   // Temp directory
   const TMP_DIR = path.join(os.tmpdir(), "maps-scraper");
